@@ -10,6 +10,13 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = timeline_client
 TEMPLATE = app
+INCLUDEPATH += usr/local/include
+LIBS += /usr/local/lib/libprotobuf.so \
+        /usr/local/lib/libgrpc.so \
+        -L /usr/local/lib -lgrpc++
+PROTOS = timeline.proto
+include(protobuf.pri)
+
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which has been marked as deprecated (the exact warnings

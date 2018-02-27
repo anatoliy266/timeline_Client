@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package timeline;
+
+service gettime {
+    rpc  obmen (ask) returns (stream answer) {}
+}
+
+
+message ask {
+    int32 needtime = 1;
+}
+
+message answer {
+    string timeis = 1;
+}
+
