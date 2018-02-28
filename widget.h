@@ -34,54 +34,50 @@ class Widget;
 class gettimeClient;
 }
 
-class Widget : public QWidget//A
-{
+class Widget : public QWidget {
     Q_OBJECT
-
 public:
-    friend class gettimeClient;
     explicit Widget(QWidget *parent = 0);
     ~Widget();
-
+    QString _tt;
+signals:
+    void getValue();
 private slots:
-    void on_pushButton_clicked();
-
-
+    void on_pushButton_clicked(QString value);
 private:
     Ui::Widget *ui;
-    QString tt;
 };
 
-class gettimeClient { //B
+class gettimeClient : public Widget { //B
+    Q_OBJECT
 public:
     gettimeClient(std::shared_ptr<Channel> channel) : stub_(gettime::NewStub(channel)) {}
     friend class Widget;
     void timeget() {
         timeline::ask request;
-
+        answer Answer;
         ClientContext context;
         request.set_needtime(1000);
         std::unique_ptr<ClientReader<answer>> reader(stub_->obmen(&context, request));
-        timeline::answer* reply;
-        while (reader->Read(reply)) {
-            val = reply->timeis();
-            stringval(val);
 
-        }
+        while (reader->Read(&Answer)) {
+            val = Answer.timeis();
+            value = QString::fromStdString(val);
+        };
+        connect(this->parent(), SIGNAL(getValue()), this, SLOT(signalGetValue()));
+        connect(this, SIGNAL(getValue(QString)), this->parent(), SLOT(on_pushButton_clicked(QString)));
     }
-    std::string val;
-    QString stringval(const std::string val) {
-        widget->tt = QString::fromStdString(val);
-        return widget->tt;
+signals:
+    void getValue(QString value);
+private slots:
+    void signalGetValue() {
+        emit getValue(this->value);
     }
-
 private:
     std::unique_ptr<gettime::Stub> stub_;
     QString value;
+    std::string val;
     Widget* widget;
-
-
-
 };
 
 #endif // WIDGET_H

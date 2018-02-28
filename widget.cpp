@@ -6,10 +6,7 @@ Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)
 {
-    gettimeClient client(grpc::CreateChannel("localhost:50051",
-                                             grpc::InsecureChannelCredentials()));
-    client.timeget();
-    ui->label_2->setText(tt);
+    emit getValue();
     ui->setupUi(this);
 }
 
@@ -18,7 +15,7 @@ Widget::~Widget()
     delete ui;
 }
 
-void Widget::on_pushButton_clicked()
+void Widget::on_pushButton_clicked(QString value)
 {
-
+    ui->label_2->setText(value);
 }
