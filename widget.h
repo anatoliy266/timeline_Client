@@ -7,6 +7,12 @@
 #include <QTime>
 #include <QTimer>
 #include <QString>
+#include <chrono>
+#include <iostream>
+#include <memory>
+#include <random>
+#include <string>
+#include <thread>
 #include <QLabel>
 #include <algorithm>
 #include <chrono>
@@ -32,6 +38,7 @@ using timeline::gettime;
 namespace Ui {
 class Widget;
 class gettimeClient;
+class Transit;
 }
 
 class Widget : public QWidget {
@@ -39,45 +46,47 @@ class Widget : public QWidget {
 public:
     explicit Widget(QWidget *parent = 0);
     ~Widget();
-    QString _tt;
-signals:
-    void getValue();
+public slots:
+    void getValWidgetSlot(QString value);
 private slots:
-    void on_pushButton_clicked(QString value);
+    void on_pushButton_clicked();
+    void text_change();
+
 private:
     Ui::Widget *ui;
+    QString vallue;
+    QTimer *tmr;
 };
 
-class gettimeClient : public Widget { //B
+class gettimeClient: public QObject { //B
     Q_OBJECT
 public:
     gettimeClient(std::shared_ptr<Channel> channel) : stub_(gettime::NewStub(channel)) {}
-    friend class Widget;
     void timeget() {
         timeline::ask request;
         answer Answer;
         ClientContext context;
         request.set_needtime(1000);
         std::unique_ptr<ClientReader<answer>> reader(stub_->obmen(&context, request));
-
         while (reader->Read(&Answer)) {
             val = Answer.timeis();
             value = QString::fromStdString(val);
+            std::cout<< val << std::endl;
+
         };
-        connect(this->parent(), SIGNAL(getValue()), this, SLOT(signalGetValue()));
-        connect(this, SIGNAL(getValue(QString)), this->parent(), SLOT(on_pushButton_clicked(QString)));
+        Status status = reader->Finish();
+        if (status.ok()) {
+            emit getValTimeSIg(this->value);
+        } else {
+            value = "Nothing to show";
+        };
     }
 signals:
-    void getValue(QString value);
-private slots:
-    void signalGetValue() {
-        emit getValue(this->value);
-    }
+    void getValTimeSIg(QString value);
 private:
     std::unique_ptr<gettime::Stub> stub_;
-    QString value;
     std::string val;
-    Widget* widget;
+    QString value;
 };
 
 #endif // WIDGET_H
